@@ -163,7 +163,7 @@ impl DupFinderCache {
     }
 
     pub fn contains(&self, key: &Path) -> bool {
-        self.0.contains_key(key.to_path_buf())
+        self.0.contains_key(key)
     }
 
     pub fn update_from_fs(&self, filename_enumerator: &mut FileSet) -> Result<Vec<FsCacheErrorKind>, FsCacheErrorKind> {

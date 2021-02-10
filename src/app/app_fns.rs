@@ -20,11 +20,11 @@ pub fn run_app() {
         Err(fatal_err) => {
             error!(target: "app-errorlog", "fatal error: {}", fatal_err);
 
-            let mut source: Option<&(dyn Error + 'static)> = fatal_err.source();
-            while let Some(e) = source {
-                error!(target: "app-errorlog", "    caused by: {}", e);
-                source = e.source();
-            }
+            // let mut source: Option<&(dyn Error + 'static)> = fatal_err.source();
+            // while let Some(e) = source {
+            //     error!(target: "app-errorlog", "    caused by: {}", e);
+            //     source = e.source();
+            // }
             std::process::exit(1)
         }
     }
@@ -96,7 +96,7 @@ pub fn obtain_thunks() -> Result<Vec<AppError>, AppError> {
 
         let mut resolution_thunks = matchset.create_resolution_thunks(&cache);
 
-        populate_distance_and_entries(&mut resolution_thunks, &cache);
+        sort_thunks(&mut resolution_thunks);
         crate::app::run_gui(resolution_thunks);
         save_caches_to_disk(&cache);
     }
@@ -105,29 +105,13 @@ pub fn obtain_thunks() -> Result<Vec<AppError>, AppError> {
 }
 
 #[cfg(feature = "gui")]
-pub fn populate_distance_and_entries(thunks: &mut Vec<ResolutionThunk>, cache: &DupFinderCache) {
-    for thunk in thunks.iter_mut() {
-        thunk.populate_distance(&cache);
-        thunk.populate_entries(&cache);
-    }
-
-    // thunks.sort_by_key(|thunk| {
-    //     let key = (
-    //         match thunk.distance() {
-    //             Some(distance) => distance,
-    //             None => library::Distance::MAX_DISTANCE,
-    //         },
-    //         thunk.entries().len(),
-    //         thunk.entries().iter().map(|e| e.as_os_str().len()).sum::<usize>(),
-    //     );
-    //     key
-    // });
-
+pub fn sort_thunks(thunks: &mut Vec<ResolutionThunk>) {
     thunks.sort_by_key(|thunk| {
-        let key = std::cmp::Reverse((
+        let key = (
+            thunk.distance(),
             thunk.entries().len(),
             thunk.entries().iter().map(|e| e.as_os_str().len()).sum::<usize>(),
-        ));
+        );
         key
     });
 }

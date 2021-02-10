@@ -8,7 +8,7 @@ mod gui;
 
 //exports
 pub use app_cfg::{AppCfg, OutputCfg};
-pub use app_fns::{populate_distance_and_entries, *};
+pub use app_fns::{sort_thunks, *};
 pub use arg_parse::parse_args;
 pub use errors::AppError;
 #[cfg(feature = "gui")]

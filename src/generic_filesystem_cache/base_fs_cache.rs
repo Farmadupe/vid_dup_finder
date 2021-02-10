@@ -1,7 +1,11 @@
-use std::{borrow::Borrow, fmt::Debug, path::{Path, PathBuf}, sync::{
+use std::{
+    fmt::Debug,
+    path::{Path, PathBuf},
+    sync::{
         atomic::{AtomicU32, Ordering::Relaxed},
         RwLock,
-    }};
+    },
+};
 
 use serde::{de::DeserializeOwned, Serialize};
 
@@ -225,20 +229,20 @@ where
         }
     }
 
-    pub fn get(&self, key: impl Borrow<PathBuf>) -> Result<T, FsCacheErrorKind> {
+    pub fn get(&self, key: &Path) -> Result<T, FsCacheErrorKind> {
         match self.cache.read() {
             Err(_) => unreachable!(),
-            Ok(readable_cache) => match readable_cache.get(key.borrow()) {
+            Ok(readable_cache) => match readable_cache.get(key) {
                 Some(value) => Ok(value.clone()),
-                None => Err(FsCacheErrorKind::KeyMissingError(key.borrow().to_path_buf())),
+                None => Err(FsCacheErrorKind::KeyMissingError(key.to_path_buf())),
             },
         }
     }
 
-    pub fn contains_key(&self, key: impl Borrow<PathBuf>) -> bool {
+    pub fn contains_key(&self, key: &Path) -> bool {
         match self.cache.read() {
             Err(_) => unreachable!(),
-            Ok(cache) => cache.contains_key(key.borrow()),
+            Ok(cache) => cache.contains_key(key),
         }
     }
 

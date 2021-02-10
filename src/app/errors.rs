@@ -4,7 +4,7 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum AppError {
-    #[error("Args file could not be read from location: {0}")]
+    #[error("Args file not found at {0}")]
     ArgsFileNotFoundError(PathBuf, #[source] std::io::Error),
 
     #[error("Failed to parse args file at given location: {0}: {1}")]

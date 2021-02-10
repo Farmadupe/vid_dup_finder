@@ -2,7 +2,7 @@ use std::{
     borrow::Borrow,
     fs,
     path::{Path, PathBuf},
-    time::SystemTime,
+    time::{SystemTime, UNIX_EPOCH},
 };
 
 use rayon::prelude::*;
@@ -73,14 +73,13 @@ where
         }
     }
 
-    fn get_mtime(&self, key: impl Borrow<PathBuf>) -> FsCacheResult<SystemTime> {
-        let key = key.borrow();
+    fn fs_mtime(key: &Path) -> FsCacheResult<SystemTime> {
         let metadata = match fs::metadata(&key) {
             Ok(metadata) => metadata,
             Err(e) => {
                 return Err(CacheItemIoError {
                     src: format!("{}", e),
-                    path: key.clone(),
+                    path: key.to_path_buf(),
                 })
             }
         };
@@ -90,7 +89,7 @@ where
             Err(e) => {
                 return Err(CacheItemIoError {
                     src: format!("{}", e),
-                    path: key.clone(),
+                    path: key.to_path_buf(),
                 })
             }
         };
@@ -98,33 +97,55 @@ where
         Ok(fs_mtime)
     }
 
+    // helper function to get whether a particular path has been updated in the filesystem.
+    // Contains a hacky workaround for a problem where SSHFS (and presumably FUSE underneath)
+    // reports different mtimes for files compared to a backing BTRFS filesystem (FUSE/sshfs probably
+    // reports less granular mtimes?), where a file will only be considered stale if the mtime
+    // is different by more than DURATION_TOLERANCE.
+    fn val_is_stale(&self, key: &Path) -> FsCacheResult<(bool, SystemTime)> {
+        const DURATION_TOLERANCE_SECS: i64 = 2;
+
+        let cache_mtime = self.base_cache.get(key)?.cache_mtime;
+        let fs_mtime = Self::fs_mtime(key)?;
+
+        //original implementation used the following code, which produced errors as SystemTime::duration_since
+        // appears to return an error if only the nanos portion of the fields differ
+        // let time_difference = if cache_mtime < fs_mtime {
+        //     cache_mtime.duration_since(fs_mtime)
+        // } else {
+        //     fs_mtime.duration_since(cache_mtime)
+        // };
+
+        // To fix the problem the durations are converted seconds since unix epoch.
+        let cache_mtime_secs = cache_mtime.duration_since(UNIX_EPOCH).unwrap_or_default().as_secs() as i64;
+        let fs_mtime_secs = fs_mtime.duration_since(UNIX_EPOCH).unwrap_or_default().as_secs() as i64;
+
+        let is_stale = (cache_mtime_secs - fs_mtime_secs).abs() > DURATION_TOLERANCE_SECS;
+
+        Ok((is_stale, fs_mtime))
+    }
+
     pub fn get_insert(&self, key: impl Borrow<PathBuf>) -> FsCacheResult<T> {
-        let val_is_stale = |key: &Path| -> FsCacheResult<(bool, SystemTime)> {
-            let cache_mtime = self.base_cache.get(key.to_path_buf())?.cache_mtime;
-            let fs_mtime = self.get_mtime(key.to_path_buf())?;
-
-            let is_stale = fs_mtime != cache_mtime;
-
-            Ok((is_stale, fs_mtime))
-        };
-
         //insertion required if:
         // * Item is not in cache.
         // * Cached item is out of date.
-        let mut insert_required = !self.contains_key(key.borrow());
+        let key_present = self.contains_key(key.borrow());
 
-        let mut fs_mtime: Option<SystemTime> = None;
+        let (key_stale, fs_mtime) = if key_present {
+            let (key_stale, fs_mtime) = self.val_is_stale(key.borrow())?;
+            (Some(key_stale), Some(fs_mtime))
+        } else {
+            (None, None)
+        };
 
-        if !insert_required {
-            let x = val_is_stale(key.borrow())?;
-            insert_required = x.0;
-            fs_mtime = Some(x.1);
+        if let Some(true) = key_stale {
+            println!("key_present: {}, key_stale: {:?}", key_present, key_stale);
         }
 
-        if insert_required {
+        if !key_present || matches!(key_stale, Some(true)) {
             let fs_mtime = match fs_mtime {
                 Some(fs_mtime) => fs_mtime,
-                None => self.get_mtime(key.borrow())?,
+                None => Self::fs_mtime(key.borrow())?,
             };
 
             self.force_insert(key.borrow(), fs_mtime)?;
@@ -134,10 +155,10 @@ where
     }
 
     pub fn force_reload(&self, key: impl Borrow<PathBuf>) -> FsCacheResult<T> {
-        self.force_insert(key.borrow(), self.get_mtime(key.borrow())?)
+        self.force_insert(key.borrow(), Self::fs_mtime(key.borrow())?)
     }
 
-    pub fn contains_key(&self, key: impl Borrow<PathBuf>) -> bool {
+    pub fn contains_key(&self, key: &Path) -> bool {
         self.base_cache.contains_key(key)
     }
 

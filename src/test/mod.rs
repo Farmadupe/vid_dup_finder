@@ -69,7 +69,7 @@ fn run_fudan_tests() {
 
         let mut resolution_thunks = output.create_resolution_thunks(&cache);
 
-        crate::app::populate_distance_and_entries(&mut resolution_thunks, &cache);
+        crate::app::sort_thunks(&mut resolution_thunks);
 
         if matched {
             num_matches.fetch_add(1, std::sync::atomic::Ordering::Relaxed);

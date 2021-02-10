@@ -154,6 +154,9 @@ impl MatchGroup {
             thunk.insert_entry(entry.to_path_buf(), cache.get_stats(entry).unwrap());
         }
 
+        thunk.populate_distance(&cache);
+        thunk.populate_entries(&cache);
+
         thunk
     }
 
