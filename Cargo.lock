@@ -1594,13 +1594,6 @@ checksum = "5fecdca9a5291cc2b8dcf7dc02453fee791a280f3743cb0905f8822ae463b3fe"
 name = "vid_dup_finder"
 version = "0.1.0"
 dependencies = [
- "vid_dup_finder_app",
-]
-
-[[package]]
-name = "vid_dup_finder_app"
-version = "0.1.0"
-dependencies = [
  "bincode",
  "byte-unit",
  "chrono",
@@ -1635,6 +1628,10 @@ dependencies = [
  "video_hash_filesystem_cache",
  "walkdir",
 ]
+
+[[package]]
+name = "vid_dup_finder_app"
+version = "0.1.0"
 
 [[package]]
 name = "vid_dup_finder_lib"

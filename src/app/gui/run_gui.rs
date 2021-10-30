@@ -10,7 +10,7 @@ use gtk::{
 };
 
 use super::gui_state::GuiState;
-use crate::*;
+use crate::app::*;
 
 pub fn run_gui(thunks: Vec<ResolutionThunk>) -> Result<(), AppError> {
     if thunks.is_empty() {

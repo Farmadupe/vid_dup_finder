@@ -7,15 +7,16 @@ use std::{
 };
 
 use super::app_cfg::AppCfg;
-use crate::*;
 use serde::Serialize;
 use serde_json::json;
 use vid_dup_finder_lib::*;
 use video_hash_filesystem_cache::*;
 
+use crate::app::*;
+
 pub fn run_app() -> i32 {
     //Parse arguments and bail early if there is an error.
-    let cfg = match crate::arg_parse::parse_args() {
+    let cfg = match arg_parse::parse_args() {
         Ok(cfg) => {
             configure_logs(cfg.output_cfg.verbosity);
             cfg

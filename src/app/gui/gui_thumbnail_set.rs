@@ -10,7 +10,7 @@ use rayon::prelude::*;
 use vid_dup_finder_lib::*;
 
 use super::{gui_zoom::ZoomState, img_ops::*};
-use crate::*;
+use crate::app::*;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ThumbChoice {

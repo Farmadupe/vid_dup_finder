@@ -12,7 +12,7 @@ use super::{
     gui_thumbnail_set::{GuiThumbnailSet, ThumbChoice},
     gui_zoom::{ZoomState, ZoomValue},
 };
-use crate::*;
+use crate::app::*;
 
 pub struct GuiEntryState {
     thumbs: GuiThumbnailSet,

@@ -1,12 +1,3 @@
-#![allow(clippy::let_and_return)]
-#![allow(clippy::len_without_is_empty)]
-
-#[macro_use]
-extern crate log;
-
-#[cfg(all(target_family = "unix", feature = "gui"))]
-extern crate lazy_static;
-
 mod app_cfg;
 mod app_fns;
 mod arg_parse;
@@ -26,4 +17,3 @@ pub(crate) use gui::run_gui;
 pub(crate) use resolution_thunk::*;
 
 pub use app_fns::run_app;
-pub use arg_parse::generate_shell_completions;

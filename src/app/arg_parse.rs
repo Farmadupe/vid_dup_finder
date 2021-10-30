@@ -5,7 +5,7 @@ use std::{
 
 use vid_dup_finder_lib::*;
 
-use crate::*;
+use crate::app::*;
 use AppError::*;
 
 // file specification
@@ -249,7 +249,7 @@ fn build_app() -> clap::App<'static, 'static> {
     clap_app
 }
 
-pub(crate) fn parse_args() -> Result<AppCfg, crate::AppError> {
+pub(crate) fn parse_args() -> Result<AppCfg, AppError> {
     //capture the cwd once, to minimize the risk of working with two values if it is changed by the OS at runtime.
     let cwd = std::env::current_dir().expect("failed to extract cwd");
 
@@ -333,7 +333,7 @@ pub(crate) fn parse_args() -> Result<AppCfg, crate::AppError> {
 // Arguments are always first read from the command line, but if --args-file
 // is present, then arguments are actually located in a file on disk.
 // This fn obtains the args from the correct location.
-fn get_args_from_cmdline_or_file() -> Result<clap::ArgMatches<'static>, crate::AppError> {
+fn get_args_from_cmdline_or_file() -> Result<clap::ArgMatches<'static>, AppError> {
     //first get the cmdline args. If --args-file is not present then return the cmdline args
     let cmdline_args = build_app().get_matches();
     if !cmdline_args.is_present(ARGS_FILE) {
@@ -352,7 +352,7 @@ fn get_args_from_cmdline_or_file() -> Result<clap::ArgMatches<'static>, crate::A
     }
 }
 
-fn parse_argsfile_args(argsfile_text: &str) -> Result<clap::ArgMatches<'static>, crate::AppError> {
+fn parse_argsfile_args(argsfile_text: &str) -> Result<clap::ArgMatches<'static>, AppError> {
     //now strip comments from the args file
     let args_file_contents = match comment::shell::strip(argsfile_text) {
         Ok(args_file_contents) => args_file_contents,
@@ -388,16 +388,4 @@ fn absolutify_path(cwd: &Path, path: &Path) -> PathBuf {
     //println!("canonical path: {:#?}", &p);
 
     p
-}
-
-pub fn generate_shell_completions() {
-    use clap::Shell::*;
-    let shells = [Bash, Fish, Zsh, PowerShell, Elvish];
-
-    let out_dir = PathBuf::from(std::env::var("OUT_DIR").unwrap());
-    for shell in shells {
-        let completions_dir = out_dir.join("completions").join(shell.to_string());
-        std::fs::create_dir_all(&completions_dir).unwrap();
-        build_app().gen_completions("vid_dup_finder", shell, completions_dir)
-    }
 }
