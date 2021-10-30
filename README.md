@@ -1,15 +1,13 @@
 # Video Duplicate Finder
-Video Duplicate Finder is a tool to search for duplicate and near-duplicate video files. It is capable of detecting duplicates even when the videos have been:
+Video Duplicate Finder is a command-line program (and linux-only GUI) to search for duplicate and near-duplicate video files. It is capable of detecting duplicates even when the videos have been:
  * Resized (including changes of aspect ratio)
  * Watermarked
  * Letterboxed
- * Cropped (TBD: Quantify amount of cropping that can be detected)
-
+ 
 
 Video duplicate finder contains:
-* A Rust library for detecting duplicates.
-* An optional command line program for listing unique/dupliacte files in a filesystem.
-* An optional GUI (written in GTK) to allow users to examine duplicates and mark them for deletion (currently Linux-only)
+* A command line program for listing unique/dupliacte files in a filesystem.
+* An optional linux-only GUI (written in GTK) to allow users to examine duplicates and mark them for deletion
 
 
 ## How it works
@@ -23,9 +21,28 @@ The resulting hashes can then be compared according to their hamming distance. S
 ## Requirements
 Ffmpeg must be installed on your system and be accessible on the command line.
 
+* Debian-based systems: # apt-get install ffmpeg
+* Yum-based systems:    # yum install ffmpeg
+* Windows:
+    1) Download the correct installer from <https://ffmpeg.org/download.html>
+    2) Run the installer and install ffmpeg to any directory
+    3) Add the directory into the PATH environment variable
 
-## Speed
-Excluding generation of hashes (which is dependent on the speed at which video files can be decoded), Video Duplicate Finder can deduplicate a set of 50,000 videos in under 3 seconds using a single CPU core.
+## Examples
+To find all duplicate videos in directory "dog_vids":
+* vid_dup_finder --files dog_vids
+
+To find all videos which are not duplicates in "dog_vids":
+* vid_dup_finder --files dog_vids --print-unique
+
+To find videos in "dog_vids" that have accidentally been replicated into "cat_vids"
+* vid_dup_finder --files cat_vids --with-refs dog_vids
+
+To exclude a file or directory from a search, e.g "dog_vids/beagles"
+* vid_dup_finder --files dog_vids --exclude dog_vids/beagles
+
+To run the gui to examine duplicates:
+* vid_dup_finder --files dog_vids --gui
 
 
 

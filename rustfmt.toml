@@ -1,3 +1,2 @@
 max_width = 120
-group_imports = "StdExternalCrate"
-merge_imports = true
+reorder_imports = false

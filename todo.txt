@@ -1,15 +1,4 @@
-* Separate out gui and library. use cargo features to make the gui optional, as the GUI depends on external system environment for installation (presence of libgtk-3-dev on my ubuntu machine)
 * Finalize the API and publish on crates.io
-* Add a license.
-* Make it work on windows.
-* Create documentation
-* Add comments to source code.
-* Make meaningful tests.
-* Consider adding framerate check to stats.
 * Consider checking for audio
-* Measure performance against a known dataset.
-* For all dataset sizes currently tested (up to 50k videos) the BK tree is 3-4x slower than naively checking every video against every other video (called SearchVec in the code). Despite the fact that the BK tree has much better big Oh performance, its performance may never practically beat the SearchVec. Investigate ways to make the BK tree perform better.
-* Investigate distribution methods.
 * The library is dependent on FFMPEG. Currently the user is responsible for making sure it is present on their machine themselves. Investigate ways of distributing ffmpeg with video-dup-finder which are compatible with its license.
 * Remove calls to {Option, Result}::unwrap (neverending task). Also document error handling strategy and check code is compliant.
-
