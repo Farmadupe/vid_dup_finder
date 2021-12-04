@@ -42,7 +42,7 @@ EXAMPLES:
     * vid_dup_finder --files dog_vids
 
     To find all videos which are not duplicates in "dog_vids":
-    * vid_dup_finder --files dog_vids --print-unique
+    * vid_dup_finder --files dog_vids --search-unique
 
     To find videos in "dog_vids" that have accidentally been replicated into "cat_vids"
     * vid_dup_finder --files cat_vids --with-refs dog_vids

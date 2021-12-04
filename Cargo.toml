@@ -1,6 +1,3 @@
-[workspace]
-members = ["vid_dup_finder_app"]
-
 [package]
 authors = ["Farmadupe"]
 categories = ["command-line-utilities", "multimedia", "visualization"]

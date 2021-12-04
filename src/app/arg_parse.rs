@@ -142,7 +142,7 @@ fn build_app() -> clap::App<'static, 'static> {
             .multiple(true)
             .min_values(1)
             .takes_value(true)
-            .help("File extensions to be excluded from searches. When specified the default file exclusion extensions will be replaced with the given values. Extensions must be comma separate with no spaces, e.g '--exclude-exts ext1,ext2,ext3'")
+            .help("File extensions to be excluded from searches. When specified the default file exclusion extensions will be replaced with the given values. Extensions must be comma separated with no spaces, e.g '--exclude-exts ext1,ext2,ext3'")
             .require_delimiter(true)
             .default_value("png,jpg,bmp,jpeg,txt,text,db")
             .display_order(get_ordering(EXCL_EXTS)),
