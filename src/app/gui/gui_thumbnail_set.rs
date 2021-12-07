@@ -28,19 +28,20 @@ struct ThumbRow {
 
 impl ThumbRow {
     pub fn video_from_filename(src_path: &Path) -> Self {
-        let thumbs_10sec = ffmpeg_cmdline_utils::FfmpegFrameReaderBuilder::new(src_path.to_path_buf())
-            .num_frames(7)
-            .fps("1/10")
-            .spawn()
-            .ok()
-            .and_then(|(frames_iter, _stats)| {
-                let frames_vec = frames_iter.collect::<Vec<_>>();
-                if frames_vec.len() < 5 {
-                    None
-                } else {
-                    Some(frames_vec)
-                }
-            });
+        let thumbs_10sec =
+            ffmpeg_cmdline_utils::FfmpegFrameReaderBuilder::new(src_path.to_path_buf())
+                .num_frames(7)
+                .fps("1/10")
+                .spawn()
+                .ok()
+                .and_then(|(frames_iter, _stats)| {
+                    let frames_vec = frames_iter.collect::<Vec<_>>();
+                    if frames_vec.len() < 5 {
+                        None
+                    } else {
+                        Some(frames_vec)
+                    }
+                });
 
         if let Some(thumbs) = thumbs_10sec {
             return Self { thumbs };
@@ -48,38 +49,40 @@ impl ThumbRow {
 
         // if that didn't work then maybe it's because the video is too short for a 1/30 second
         // framerate, so try again with 1/5 second framerate instead.
-        let thumbs_5sec = ffmpeg_cmdline_utils::FfmpegFrameReaderBuilder::new(src_path.to_path_buf())
-            .num_frames(7)
-            .fps("1/5")
-            .spawn()
-            .ok()
-            .and_then(|(frames_iter, _stats)| {
-                let frames_vec = frames_iter.collect::<Vec<_>>();
-                if frames_vec.is_empty() {
-                    None
-                } else {
-                    Some(frames_vec)
-                }
-            });
+        let thumbs_5sec =
+            ffmpeg_cmdline_utils::FfmpegFrameReaderBuilder::new(src_path.to_path_buf())
+                .num_frames(7)
+                .fps("1/5")
+                .spawn()
+                .ok()
+                .and_then(|(frames_iter, _stats)| {
+                    let frames_vec = frames_iter.collect::<Vec<_>>();
+                    if frames_vec.is_empty() {
+                        None
+                    } else {
+                        Some(frames_vec)
+                    }
+                });
 
         if let Some(thumbs) = thumbs_5sec {
             return Self { thumbs };
         }
 
         // try 0.5 second interval.
-        let thumbs_halfsec = ffmpeg_cmdline_utils::FfmpegFrameReaderBuilder::new(src_path.to_path_buf())
-            .num_frames(7)
-            .fps("2")
-            .spawn()
-            .ok()
-            .and_then(|(frames_iter, _stats)| {
-                let frames_vec = frames_iter.collect::<Vec<_>>();
-                if frames_vec.is_empty() {
-                    None
-                } else {
-                    Some(frames_vec)
-                }
-            });
+        let thumbs_halfsec =
+            ffmpeg_cmdline_utils::FfmpegFrameReaderBuilder::new(src_path.to_path_buf())
+                .num_frames(7)
+                .fps("2")
+                .spawn()
+                .ok()
+                .and_then(|(frames_iter, _stats)| {
+                    let frames_vec = frames_iter.collect::<Vec<_>>();
+                    if frames_vec.is_empty() {
+                        None
+                    } else {
+                        Some(frames_vec)
+                    }
+                });
 
         if let Some(thumbs) = thumbs_halfsec {
             return Self { thumbs };
@@ -132,7 +135,9 @@ impl ThumbRow {
 
     fn without_letterbox(&self) -> ThumbRow {
         Self {
-            thumbs: VideoFrames::from_images(&self.thumbs).without_letterbox().into_inner(),
+            thumbs: VideoFrames::from_images(&self.thumbs)
+                .without_letterbox()
+                .into_inner(),
         }
     }
 }
@@ -204,7 +209,8 @@ impl GuiThumbnail {
                 }
 
                 if self.base_cropdetect.is_none() {
-                    self.base_cropdetect = Some(self.base_video.as_ref().unwrap().without_letterbox())
+                    self.base_cropdetect =
+                        Some(self.base_video.as_ref().unwrap().without_letterbox())
                 }
             }
             ThumbChoice::Spatial => {
@@ -276,7 +282,12 @@ impl GuiThumbnailSet {
     pub fn new(info: Vec<(&Path, VideoHash)>, zoom: ZoomState, choice: ThumbChoice) -> Self {
         let mut thumbs = HashMap::new();
         info.into_par_iter()
-            .map(|(src_path, hash)| (src_path.to_path_buf(), GuiThumbnail::new(src_path, hash, zoom, choice)))
+            .map(|(src_path, hash)| {
+                (
+                    src_path.to_path_buf(),
+                    GuiThumbnail::new(src_path, hash, zoom, choice),
+                )
+            })
             .collect::<Vec<_>>()
             .into_iter()
             .for_each(|(src_path, thumb)| {

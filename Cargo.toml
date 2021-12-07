@@ -7,7 +7,7 @@ edition = "2018"
 repository = "https://github.com/Farmadupe/vid_dup_finder"
 license = "MIT OR Apache-2.0"
 name = "vid_dup_finder"
-version = "0.1.0"
+version = "0.1.1"
 
 [features]
 "gui" = ["libc", "gtk", "gio", "glib", "gdk-pixbuf", "gdk", "sha2", "regex", "lazy_static"]

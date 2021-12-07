@@ -1,5 +1,5 @@
-use std::path::PathBuf;
 use std::ffi::OsString;
+use std::path::PathBuf;
 
 use vid_dup_finder_lib::*;
 

@@ -22,8 +22,8 @@ pub fn run_gui(thunks: Vec<ResolutionThunk>) -> Result<(), AppError> {
 
     let state: Rc<RefCell<GuiState>> = Rc::new(RefCell::new(GuiState::new(thunks, false)));
 
-    let application =
-        Application::new(Some("org.gtkrsnotes.demo"), Default::default()).map_err(|_e| AppError::GuiStartError)?;
+    let application = Application::new(Some("org.gtkrsnotes.demo"), Default::default())
+        .map_err(|_e| AppError::GuiStartError)?;
 
     application.connect_activate(move |app| application_connect_activate_callback(app, &state));
 
@@ -31,7 +31,12 @@ pub fn run_gui(thunks: Vec<ResolutionThunk>) -> Result<(), AppError> {
     Ok(())
 }
 
-fn rerender_gui(state: &Rc<RefCell<GuiState>>, entries_box: &Box, window: &ApplicationWindow, idx_label: &gtk::Label) {
+fn rerender_gui(
+    state: &Rc<RefCell<GuiState>>,
+    entries_box: &Box,
+    window: &ApplicationWindow,
+    idx_label: &gtk::Label,
+) {
     let state = state.borrow();
 
     for child in entries_box.get_children() {

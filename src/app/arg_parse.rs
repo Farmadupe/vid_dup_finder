@@ -89,13 +89,14 @@ fn build_app() -> clap::App<'static, 'static> {
     let tol = NormalizedTolerance::default();
     let default_tol_string: &'static str = Box::leak(format!("{}", tol.value()).into_boxed_str());
 
-    let default_cache_file = directories_next::ProjectDirs::from("", "vid_dup_finder", "vid_dup_finder")
-        .unwrap()
-        .cache_dir()
-        .join("vid_dup_finder_cache.bin")
-        .to_str()
-        .unwrap()
-        .to_owned();
+    let default_cache_file =
+        directories_next::ProjectDirs::from("", "vid_dup_finder", "vid_dup_finder")
+            .unwrap()
+            .cache_dir()
+            .join("vid_dup_finder_cache.bin")
+            .to_str()
+            .unwrap()
+            .to_owned();
     let default_cache_file: &'static str = Box::leak(default_cache_file.into_boxed_str());
 
     //args are not added through method chaining because rustfmt struggles with very long expressions.
@@ -259,21 +260,32 @@ pub(crate) fn parse_args() -> Result<AppCfg, AppError> {
     let args = get_args_from_cmdline_or_file()?;
 
     let file_paths = match args.values_of_os(FILE_PATHS) {
-        Some(paths) => paths.into_iter().map(|p| absolutify_path(&cwd, p.as_ref())).collect(),
+        Some(paths) => paths
+            .into_iter()
+            .map(|p| absolutify_path(&cwd, p.as_ref()))
+            .collect(),
         None => vec![],
     };
 
     let ref_file_paths = match args.values_of_os(REF_PATHS) {
-        Some(ref_file_dirs) => ref_file_dirs.map(|p| absolutify_path(&cwd, p.as_ref())).collect(),
+        Some(ref_file_dirs) => ref_file_dirs
+            .map(|p| absolutify_path(&cwd, p.as_ref()))
+            .collect(),
         None => vec![],
     };
 
     let exclude_file_paths = match args.values_of_os(EXCL_FILE_PATHS) {
-        Some(exclude_file_paths) => exclude_file_paths.map(|p| absolutify_path(&cwd, p.as_ref())).collect(),
+        Some(exclude_file_paths) => exclude_file_paths
+            .map(|p| absolutify_path(&cwd, p.as_ref()))
+            .collect(),
         None => vec![],
     };
 
-    let excl_exts = args.values_of_os(EXCL_EXTS).unwrap().map(&OsStr::to_owned).collect();
+    let excl_exts = args
+        .values_of_os(EXCL_EXTS)
+        .unwrap()
+        .map(&OsStr::to_owned)
+        .collect();
 
     let output_thumbs_dir = args
         .value_of_os(OUTPUT_THUMBS_DIR)
@@ -343,8 +355,8 @@ fn get_args_from_cmdline_or_file() -> Result<clap::ArgMatches<'static>, AppError
     } else {
         let argsfile_path = cmdline_args.value_of_os(ARGS_FILE).unwrap();
 
-        let argsfile_text =
-            std::fs::read_to_string(argsfile_path).map_err(|e| ArgsFileNotFound(PathBuf::from(argsfile_path), e))?;
+        let argsfile_text = std::fs::read_to_string(argsfile_path)
+            .map_err(|e| ArgsFileNotFound(PathBuf::from(argsfile_path), e))?;
 
         let argsfile_args = parse_argsfile_args(&argsfile_text)?;
 

@@ -201,7 +201,10 @@ impl ResolutionThunk {
     }
 
     pub fn entries(&self) -> Vec<&Path> {
-        self.entries.iter().map(|x| x.filename.as_path()).collect::<Vec<_>>()
+        self.entries
+            .iter()
+            .map(|x| x.filename.as_path())
+            .collect::<Vec<_>>()
     }
 
     pub fn hash(&self, src_path: &Path) -> VideoHash {
@@ -215,10 +218,23 @@ impl ResolutionThunk {
     }
 
     pub fn calc_winning_stats(&self, filename: &Path) -> WinningStats {
-        let best_pngsize = self.entries.iter().map(|e| e.stats.png_size).max().unwrap_or_default();
-        let pngsize_all_eq = self.entries.iter().all(|e| e.stats.png_size == best_pngsize);
+        let best_pngsize = self
+            .entries
+            .iter()
+            .map(|e| e.stats.png_size)
+            .max()
+            .unwrap_or_default();
+        let pngsize_all_eq = self
+            .entries
+            .iter()
+            .all(|e| e.stats.png_size == best_pngsize);
 
-        let best_filesize = self.entries.iter().map(|e| e.stats.size()).max().unwrap_or_default();
+        let best_filesize = self
+            .entries
+            .iter()
+            .map(|e| e.stats.size())
+            .max()
+            .unwrap_or_default();
         let filesize_all_eq = self.entries.iter().all(|e| e.stats.size() == best_filesize);
 
         let best_res = self
@@ -227,7 +243,10 @@ impl ResolutionThunk {
             .map(|e| e.stats.resolution())
             .max_by_key(|(x, y)| x * y)
             .unwrap_or_default();
-        let res_all_eq = self.entries.iter().all(|e| e.stats.resolution() == best_res);
+        let res_all_eq = self
+            .entries
+            .iter()
+            .all(|e| e.stats.resolution() == best_res);
 
         let best_bitrate = self
             .entries
@@ -235,12 +254,22 @@ impl ResolutionThunk {
             .map(|e| e.stats.bit_rate())
             .max()
             .unwrap_or_default();
-        let bitrate_all_eq = self.entries.iter().all(|e| e.stats.bit_rate() == best_bitrate);
+        let bitrate_all_eq = self
+            .entries
+            .iter()
+            .all(|e| e.stats.bit_rate() == best_bitrate);
 
         let best_has_audio = self.entries.iter().any(|e| e.stats.has_audio());
-        let has_audio_all_eq = self.entries.iter().all(|e| e.stats.has_audio() == best_has_audio);
+        let has_audio_all_eq = self
+            .entries
+            .iter()
+            .all(|e| e.stats.has_audio() == best_has_audio);
 
-        let current_entry = self.entries.iter().find(|e| e.filename == filename).unwrap();
+        let current_entry = self
+            .entries
+            .iter()
+            .find(|e| e.filename == filename)
+            .unwrap();
         let current_stats = &current_entry.stats;
 
         WinningStats {
@@ -254,7 +283,12 @@ impl ResolutionThunk {
     }
 
     pub fn render_duration(&self, filename: &Path) -> String {
-        let stats = &self.entries.iter().find(|e| e.filename == filename).unwrap().stats;
+        let stats = &self
+            .entries
+            .iter()
+            .find(|e| e.filename == filename)
+            .unwrap()
+            .stats;
 
         let duration = stats.duration() as u64;
         format!("{}:{:02}", duration / 60, duration % 60)
@@ -267,7 +301,12 @@ impl ResolutionThunk {
     // }
 
     pub fn render_details_top(&self, filename: &Path) -> String {
-        let stats = &self.entries.iter().find(|e| e.filename == filename).unwrap().stats;
+        let stats = &self
+            .entries
+            .iter()
+            .find(|e| e.filename == filename)
+            .unwrap()
+            .stats;
 
         let filesize = byte_unit::Byte::from_bytes(stats.size() as u128);
         let filesize = filesize.get_appropriate_unit(false);
@@ -280,7 +319,12 @@ impl ResolutionThunk {
     }
 
     pub fn render_details_bottom(&self, filename: &Path) -> String {
-        let stats = &self.entries.iter().find(|e| e.filename == filename).unwrap().stats;
+        let stats = &self
+            .entries
+            .iter()
+            .find(|e| e.filename == filename)
+            .unwrap()
+            .stats;
 
         let bitrate = stats.bit_rate() as f64 / 1_000_000.0;
 
@@ -416,7 +460,8 @@ impl ResolutionThunk {
             new_name = contents_entry.filename.clone();
         } else {
             need_to_move_contents = true;
-            let new_name_with_wrong_ext = with_basename(&dirname_entry.filename, &basename_entry.filename);
+            let new_name_with_wrong_ext =
+                with_basename(&dirname_entry.filename, &basename_entry.filename);
             new_name = with_extension(&new_name_with_wrong_ext, &contents_entry.filename);
 
             //abort early if new_name already exists and would not be deleted in the trashing phase
@@ -467,7 +512,10 @@ impl ResolutionThunk {
 
                 let mut file = match std::fs::File::open(&path) {
                     Ok(file) => Ok(file),
-                    Err(e) => Err(TrashError::FileOpenError(path.to_string_lossy().to_string(), e)),
+                    Err(e) => Err(TrashError::FileOpenError(
+                        path.to_string_lossy().to_string(),
+                        e,
+                    )),
                 }?;
                 let mut hasher = sha2::Sha256::new();
 
@@ -517,7 +565,9 @@ fn move_path(source: &Path, dest: &Path) -> Result<(), TrashError> {
     match dest.parent() {
         Some(parent_dir) => {
             if std::fs::create_dir_all(parent_dir).is_err() {
-                return Err(CreateParentDirFailure(parent_dir.to_string_lossy().to_string()));
+                return Err(CreateParentDirFailure(
+                    parent_dir.to_string_lossy().to_string(),
+                ));
             }
         }
         None => {
@@ -531,17 +581,26 @@ fn move_path(source: &Path, dest: &Path) -> Result<(), TrashError> {
                 //try copy and delete.
                 println!("Unable to move. Performing copy and delete instead.");
                 if let Err(_e) = std::fs::copy(&source, &dest) {
-                    let e = CopyFailError(source.to_string_lossy().to_string(), dest.to_string_lossy().to_string());
+                    let e = CopyFailError(
+                        source.to_string_lossy().to_string(),
+                        dest.to_string_lossy().to_string(),
+                    );
                     return Err(e);
                 };
                 delete_path(source)?;
             }
             Some(_) => {
-                let e = UnhandledError(source.to_string_lossy().to_string(), dest.to_string_lossy().to_string());
+                let e = UnhandledError(
+                    source.to_string_lossy().to_string(),
+                    dest.to_string_lossy().to_string(),
+                );
                 return Err(e);
             }
             None => {
-                let e = RenameNoneError(source.to_string_lossy().to_string(), dest.to_string_lossy().to_string());
+                let e = RenameNoneError(
+                    source.to_string_lossy().to_string(),
+                    dest.to_string_lossy().to_string(),
+                );
                 return Err(e);
             }
         }

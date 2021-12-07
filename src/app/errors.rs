@@ -26,10 +26,18 @@ pub enum AppError {
     PathInFilesAndRefs(PathBuf),
 
     #[error("Path in --files is excluded by --exclude. Path: {src_path}, Exclusion: {excl_path}")]
-    SrcPathExcludedError { src_path: PathBuf, excl_path: PathBuf },
+    SrcPathExcludedError {
+        src_path: PathBuf,
+        excl_path: PathBuf,
+    },
 
-    #[error("Path in --with-refs is excluded by --exclude. Path: {src_path}, Exclusion: {excl_path}")]
-    RefPathExcludedError { src_path: PathBuf, excl_path: PathBuf },
+    #[error(
+        "Path in --with-refs is excluded by --exclude. Path: {src_path}, Exclusion: {excl_path}"
+    )]
+    RefPathExcludedError {
+        src_path: PathBuf,
+        excl_path: PathBuf,
+    },
 
     #[error("Path in --files not found: {0}")]
     CandPathNotFoundError(PathBuf),

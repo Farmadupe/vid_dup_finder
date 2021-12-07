@@ -74,13 +74,16 @@ fn run_app_inner(cfg: &AppCfg) -> Result<Vec<AppError>, AppError> {
     // If any ref_path is a child of any cand_path, add it as an excl of cand_paths. This allows ref_paths to be located
     // in subdirs of cand_paths.
     // Also do the same the other way round
-    let (cand_excls, ref_excls) = resolve_shadowing_paths_of_cands_and_refs(cand_dirs, ref_dirs, excl_dirs);
+    let (cand_excls, ref_excls) =
+        resolve_shadowing_paths_of_cands_and_refs(cand_dirs, ref_dirs, excl_dirs);
 
     //load up existing hashes from disk. If no-cache-mode is specified, then set the save threshold of the cache
     //to a very high number
     let cache_save_threshold = 100;
-    let cache =
-        VideoHashFilesystemCache::new(cache_save_threshold, cfg.cache_cfg.cache_path.as_ref().unwrap().clone())?;
+    let cache = VideoHashFilesystemCache::new(
+        cache_save_threshold,
+        cfg.cache_cfg.cache_path.as_ref().unwrap().clone(),
+    )?;
 
     // Update the cache file with all videos specified by --files and --with-refs
     if !cfg.cache_cfg.no_update_cache {
@@ -108,8 +111,8 @@ fn run_app_inner(cfg: &AppCfg) -> Result<Vec<AppError>, AppError> {
         .cloned()
         .collect::<HashSet<PathBuf, RandomState>>();
 
-    let mut cand_projection =
-        FileProjection::new(cand_dirs, cand_excls, excl_exts.clone()).map_err(AppError::from_cand_exclusion_error)?;
+    let mut cand_projection = FileProjection::new(cand_dirs, cand_excls, excl_exts.clone())
+        .map_err(AppError::from_cand_exclusion_error)?;
     cand_projection.project_using_list(&all_hash_paths);
     let cand_paths = cand_projection.projected_files();
     let cand_hashes = cand_paths
@@ -117,8 +120,8 @@ fn run_app_inner(cfg: &AppCfg) -> Result<Vec<AppError>, AppError> {
         .map(|cand_path| cache.fetch(cand_path).unwrap())
         .collect::<Vec<_>>();
 
-    let mut ref_projection =
-        FileProjection::new(ref_dirs, ref_excls, excl_exts.clone()).map_err(AppError::from_ref_exclusion_error)?;
+    let mut ref_projection = FileProjection::new(ref_dirs, ref_excls, excl_exts.clone())
+        .map_err(AppError::from_ref_exclusion_error)?;
     ref_projection.project_using_list(&all_hash_paths);
     let ref_paths = ref_projection.projected_files();
     let ref_hashes = ref_paths
@@ -134,7 +137,11 @@ fn run_app_inner(cfg: &AppCfg) -> Result<Vec<AppError>, AppError> {
             let thunks = matchset
                 .into_iter()
                 .map(|match_group| {
-                    ResolutionThunk::from_matchgroup(&match_group, &cache, &cfg.output_cfg.gui_trash_path)
+                    ResolutionThunk::from_matchgroup(
+                        &match_group,
+                        &cache,
+                        &cfg.output_cfg.gui_trash_path,
+                    )
                 })
                 .collect();
             run_gui(thunks)?;
@@ -142,16 +149,20 @@ fn run_app_inner(cfg: &AppCfg) -> Result<Vec<AppError>, AppError> {
     } else if let Some(output_thumbs_dir) = &cfg.output_cfg.output_thumbs_dir {
         use rayon::prelude::*;
 
-        let font = rusttype::Font::try_from_bytes(include_bytes!("font/NotoSans-Regular.ttf")).unwrap();
+        let font =
+            rusttype::Font::try_from_bytes(include_bytes!("font/NotoSans-Regular.ttf")).unwrap();
 
-        matchset.par_iter().enumerate().for_each(|(i, match_group)| {
-            let output_path = output_thumbs_dir.join(format!("{}.png", i));
+        matchset
+            .par_iter()
+            .enumerate()
+            .for_each(|(i, match_group)| {
+                let output_path = output_thumbs_dir.join(format!("{}.png", i));
 
-            let reference = match_group.reference();
-            let duplicates = match_group.duplicates();
+                let reference = match_group.reference();
+                let duplicates = match_group.duplicates();
 
-            write_image(reference, duplicates, &output_path, &font);
-        });
+                write_image(reference, duplicates, &output_path, &font);
+            });
     } else {
         let search_output = SearchOutput::new(matchset);
 
@@ -180,9 +191,10 @@ fn update_hash_cache(
     nonfatal_errs: &mut Vec<AppError>,
     cache: &VideoHashFilesystemCache,
 ) -> Result<(), AppError> {
-    let mut cands =
-        FileProjection::new(cand_dirs, cand_excls, excl_exts).map_err(AppError::from_cand_exclusion_error)?;
-    let mut refs = FileProjection::new(ref_dirs, ref_excls, excl_exts).map_err(AppError::from_ref_exclusion_error)?;
+    let mut cands = FileProjection::new(cand_dirs, cand_excls, excl_exts)
+        .map_err(AppError::from_cand_exclusion_error)?;
+    let mut refs = FileProjection::new(ref_dirs, ref_excls, excl_exts)
+        .map_err(AppError::from_ref_exclusion_error)?;
     match cands.project_using_fs() {
         Ok(projection_errs) => nonfatal_errs.extend(
             projection_errs
@@ -190,8 +202,12 @@ fn update_hash_cache(
                 .map(|e| AppError::FileSearchError(e.path().unwrap().to_path_buf(), e)),
         ),
         Err(fatal_err) => match fatal_err {
-            FileProjectionError::PathNotFound(path) => return Err(AppError::CandPathNotFoundError(path)),
-            FileProjectionError::ExclPathNotFound(path) => return Err(AppError::ExclPathNotFoundError(path)),
+            FileProjectionError::PathNotFound(path) => {
+                return Err(AppError::CandPathNotFoundError(path))
+            }
+            FileProjectionError::ExclPathNotFound(path) => {
+                return Err(AppError::ExclPathNotFoundError(path))
+            }
             _ => unreachable!(),
         },
     };
@@ -202,12 +218,24 @@ fn update_hash_cache(
                 .map(|e| AppError::FileSearchError(e.path().as_ref().unwrap().to_path_buf(), e)),
         ),
         Err(fatal_err) => match fatal_err {
-            FileProjectionError::PathNotFound(path) => return Err(AppError::RefPathNotFoundError(path)),
+            FileProjectionError::PathNotFound(path) => {
+                return Err(AppError::RefPathNotFoundError(path))
+            }
             _ => unreachable!(),
         },
     };
-    nonfatal_errs.extend(cache.update_using_fs(&cands)?.into_iter().map(AppError::from));
-    nonfatal_errs.extend(cache.update_using_fs(&refs)?.into_iter().map(AppError::from));
+    nonfatal_errs.extend(
+        cache
+            .update_using_fs(&cands)?
+            .into_iter()
+            .map(AppError::from),
+    );
+    nonfatal_errs.extend(
+        cache
+            .update_using_fs(&refs)?
+            .into_iter()
+            .map(AppError::from),
+    );
     cache.save()?;
     Ok(())
 }
@@ -258,10 +286,17 @@ fn resolve_shadowing_paths_of_cands_and_refs(
             .chain(shadow_paths)
     };
 
-    (with_excls(cand_shadows).collect(), with_excls(ref_shadows).collect())
+    (
+        with_excls(cand_shadows).collect(),
+        with_excls(ref_shadows).collect(),
+    )
 }
 
-pub fn obtain_thunks(cfg: &AppCfg, cand_hashes: Vec<VideoHash>, ref_hashes: Vec<VideoHash>) -> Vec<MatchGroup> {
+pub fn obtain_thunks(
+    cfg: &AppCfg,
+    cand_hashes: Vec<VideoHash>,
+    ref_hashes: Vec<VideoHash>,
+) -> Vec<MatchGroup> {
     //sanity check: Warn the user if no files were selected for the search
     if cand_hashes.is_empty() {
         warn!("No files were found at the paths given by --files. No results will be returned.")
@@ -316,8 +351,13 @@ pub fn configure_logs(verbosity: ReportVerbosity) {
         ReportVerbosity::Verbose => LevelFilter::Trace,
     };
 
-    TermLogger::init(min_loglevel, cfg.build(), TerminalMode::Stderr, ColorChoice::Auto)
-        .expect("TermLogger failed to initialize");
+    TermLogger::init(
+        min_loglevel,
+        cfg.build(),
+        TerminalMode::Stderr,
+        ColorChoice::Auto,
+    )
+    .expect("TermLogger failed to initialize");
 }
 
 fn print_search_results(search_output: &SearchOutput, unique_paths: &[&Path], app_cfg: &AppCfg) {
@@ -374,9 +414,9 @@ fn write_image(
     font: &rusttype::Font,
 ) {
     //use imageproc::*;
-    use image::RgbImage;
-    use image::ImageBuffer;
     use image::GenericImage;
+    use image::ImageBuffer;
+    use image::RgbImage;
 
     info!(
         target: "write_image",
@@ -385,7 +425,11 @@ fn write_image(
 
     pub fn grid_images(images: &[(String, Vec<RgbImage>)], font: &rusttype::Font) -> RgbImage {
         let (img_x, img_y) = images.get(0).unwrap().1.get(0).unwrap().dimensions();
-        let grid_num_x = images.iter().map(|(_src_path, imgs)| imgs.len()).max().unwrap_or(0) as u32;
+        let grid_num_x = images
+            .iter()
+            .map(|(_src_path, imgs)| imgs.len())
+            .max()
+            .unwrap_or(0) as u32;
         let grid_num_y = images.len() as u32;
 
         let txt_y = 20;
@@ -402,7 +446,9 @@ fn write_image(
             for (row_no, img) in row_imgs.iter().enumerate() {
                 let x_coord = row_no as u32 * img_x;
 
-                grid_buf.copy_from(img as &RgbImage, x_coord, y_coord + txt_y).unwrap();
+                grid_buf
+                    .copy_from(img as &RgbImage, x_coord, y_coord + txt_y)
+                    .unwrap();
             }
             imageproc::drawing::draw_text_mut(
                 &mut grid_buf,
@@ -438,7 +484,14 @@ fn write_image(
                     .ok()
                     .map(|(frames_iter, _stats)| {
                         frames_iter
-                            .map(|img| image::imageops::resize(&img, 200, 200, image::imageops::FilterType::Triangle))
+                            .map(|img| {
+                                image::imageops::resize(
+                                    &img,
+                                    200,
+                                    200,
+                                    image::imageops::FilterType::Triangle,
+                                )
+                            })
                             .collect::<Vec<_>>()
                     })
                     .unwrap(),

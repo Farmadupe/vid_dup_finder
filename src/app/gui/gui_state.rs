@@ -27,7 +27,12 @@ pub struct GuiEntryState {
 }
 
 impl GuiEntryState {
-    pub fn new(thunk: ResolutionThunk, single_mode: bool, thumb_choice: ThumbChoice, zoom: ZoomState) -> Self {
+    pub fn new(
+        thunk: ResolutionThunk,
+        single_mode: bool,
+        thumb_choice: ThumbChoice,
+        zoom: ZoomState,
+    ) -> Self {
         let info = thunk
             .entries()
             .into_iter()
@@ -133,22 +138,33 @@ impl GuiEntryState {
 
         let winning_stats = self.thunk.calc_winning_stats(src_path);
 
-        let ref_label = gtk::Label::new(Some(if winning_stats.is_reference { "REF" } else { "   " }));
+        let ref_label = gtk::Label::new(Some(if winning_stats.is_reference {
+            "REF"
+        } else {
+            "   "
+        }));
         ref_label.set_width_chars(3);
 
-        let pngsize_label = gtk::Label::new(Some(if winning_stats.pngsize { "PNG" } else { "   " }));
+        let pngsize_label =
+            gtk::Label::new(Some(if winning_stats.pngsize { "PNG" } else { "   " }));
         pngsize_label.set_width_chars(3);
 
-        let filesize_label = gtk::Label::new(Some(if winning_stats.filesize { "FIL" } else { "   " }));
+        let filesize_label =
+            gtk::Label::new(Some(if winning_stats.filesize { "FIL" } else { "   " }));
         filesize_label.set_width_chars(3);
 
         let res_label = gtk::Label::new(Some(if winning_stats.res { "RES" } else { "   " }));
         res_label.set_width_chars(3);
 
-        let bitrate_label = gtk::Label::new(Some(if winning_stats.bitrate { "BIT" } else { "   " }));
+        let bitrate_label =
+            gtk::Label::new(Some(if winning_stats.bitrate { "BIT" } else { "   " }));
         bitrate_label.set_width_chars(3);
 
-        let audio_label = gtk::Label::new(Some(if winning_stats.has_audio { "AUD" } else { "   " }));
+        let audio_label = gtk::Label::new(Some(if winning_stats.has_audio {
+            "AUD"
+        } else {
+            "   "
+        }));
 
         let duration = self.thunk.render_duration(src_path);
         let duration_label = gtk::Label::new(Some(&duration));
@@ -179,7 +195,8 @@ impl GuiEntryState {
         let button = Button::with_label(&src_path.to_string_lossy());
         button.set_halign(gtk::Align::Start);
         let src_path = src_path.to_path_buf();
-        button.connect_clicked(clone!(@strong src_path => move |_|Self::vlc_video_inner(&src_path)));
+        button
+            .connect_clicked(clone!(@strong src_path => move |_|Self::vlc_video_inner(&src_path)));
 
         let thumb = self.thumbs_pixbuf.as_ref().unwrap().get(&src_path).unwrap();
 
@@ -272,7 +289,11 @@ impl GuiEntryState {
         let command = command.arg(main_vid).arg(&follow_arg);
 
         if let Err(e) = command.spawn() {
-            warn!("Failed to start vlc at {}: {}", follow_arg.to_string_lossy(), e);
+            warn!(
+                "Failed to start vlc at {}: {}",
+                follow_arg.to_string_lossy(),
+                e
+            );
         }
     }
 
@@ -511,8 +532,8 @@ impl GuiState {
                 self.keypress_string.clear();
             }
 
-            "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "kp_0" | "kp_1" | "kp_2" | "kp_3" | "kp_4"
-            | "kp_5" | "kp_6" | "kp_7" | "kp_8" | "kp_9" => {
+            "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "kp_0" | "kp_1"
+            | "kp_2" | "kp_3" | "kp_4" | "kp_5" | "kp_6" | "kp_7" | "kp_8" | "kp_9" => {
                 self.keypress_string.push(key.chars().last().unwrap());
             }
 
