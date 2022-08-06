@@ -454,7 +454,7 @@ fn write_image(
                 &mut grid_buf,
                 image::Rgb::<u8>([255, 255, 255]),
                 0,
-                y_coord + 3,
+                y_coord as i32 + 3,
                 rusttype::Scale { x: 15.0, y: 15.0 },
                 font,
                 src_path.as_str(),
