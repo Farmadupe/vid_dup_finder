@@ -1,4 +1,0 @@
-* Finalize the API and publish on crates.io
-* Consider checking for audio
-* The library is dependent on FFMPEG. Currently the user is responsible for making sure it is present on their machine themselves. Investigate ways of distributing ffmpeg with video-dup-finder which are compatible with its license.
-* Remove calls to {Option, Result}::unwrap (neverending task). Also document error handling strategy and check code is compliant.
